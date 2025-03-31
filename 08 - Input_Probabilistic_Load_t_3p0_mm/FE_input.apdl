@@ -1,0 +1,787 @@
+/BATCH
+!-------------------------------------------------------------------------!
+!****_                    1. ANSYS STARTING                 		 _****!
+!-------------------------------------------------------------------------!
+FINISH
+/CLEAR,NOSTART
+/FILENAME,zteste
+/CWD,'C:\AnsysWD'           ! Change Working Directory
+/DELETE,0
+/DELETE,0,iges
+/DELETE,T_F_U_K,txt
+/DELETE,DESL_MAX,txt
+/DELETE,RIG_MIN,txt
+/DELETE,RIG_INIC,txt
+/DELETE,RESP_ESTR,txt
+/DELETE,ANG_RIG_MIN,txt
+!***_
+!-------------------------------------------------------------------------!
+!****_                    2.1 Random variables                   	 _****!
+!-------------------------------------------------------------------------!
+! BAR 1 a 6
+x1=1.529462e-02				! 0.015875
+x2=9.658434e-03				! 0.009525
+! BAR 7 e 15
+x3=1.266371e-02				! 0.0127
+x4=1.571634e-02				! 0.0127
+x5=9.493340e-03				! 0.009525
+! BAR 8, 11 e 14
+x6=9.419979e-03				! 0.009525
+x7=1.275317e-02				! 0.009525
+x8=9.618547e-03				! 0.009525
+! BAR 9, 10, 12 e 13
+x9=9.427440e-03				! 0.009525
+x10=1.249444e-02			! 0.009525
+x11=9.400120e-03			! 0.009525
+! BAR 16 e 17
+x12=1.614540e-02			! 0.015875
+x13=1.866018e-02			! 0.015875
+x14=9.556068e-03			! 0.009525
+! Elasticity module - E
+x15=1.310134e+11			! 195.8E9
+! Material resistance - fy
+x16=2.665861e+08			! 232.94E6
+! Live Load P (N)
+x17=6.268778e+05			! 570.99E3
+! Uniform loading Q (N/m)
+x18=3.523518e+04			! 31.973E3
+! Mod Err Var
+x19=9.949255e-01
+!***_
+!-------------------------------------------------------------------------!
+!****_                    2.2 Other parameters                       _****!
+!-------------------------------------------------------------------------!  
+! 2.2.1 Live load parameters
+Pcrit=857601.6361			! Pcrit Euler Section B-B
+Liv=32.625
+L1=5.5880!5.1363
+L2=5.5880
+P=x17                  		! [N]
+Q=x18*(L1*1/2+L2*1/2)     
+! 2.2.3 Material parameters
+tt=0.003
+E = X15						! [Pa] 
+fy = X16					
+Den = 7850					! [kg/m³]
+! Den = 0					! [kg/m³]
+Poisson	= 0.3				! [Adm] - Coef Poisson
+Pi = acos(-1)				! [Adm] - Constant Pi
+Epsl_y	= fy/E				! [adm] - Elastic Deformation Elastic Portion
+Epsl_u = 0.2847				! [adm]	- Ultimate deformation
+DISP_TOL=liv/800            ! [m]   - Maximum displacement allowed
+RIG_TOL=0.6                 ! [%]   - Minimum relative stiffness
+!***_
+!-------------------------------------------------------------------------!
+!****_                    2.3 PROPSEC                                 ****!
+!-------------------------------------------------------------------------!  
+! 2.3 Geometric properties
+! SECTION 1: H-H			
+H_1=0.381					
+W_1=0.0857					
+T11=X1						
+T21=X2						
+T31=0						
+D_1=0.29						
+TY1=1						
+PROPSEC,H_1,W_1,T11,T21,T31,D_1,TY1
+A1=PSAREA
+I1=PSINERCIA
+! SECTION 2: H-H
+H_2=0.381
+W_2=0.0857
+T12=X1
+T22=X2
+T32=0
+D_2=0.29
+TY2=1
+PROPSEC,H_2,W_2,T12,T22,T32,D_2,TY2
+A2=PSAREA
+I2=PSINERCIA
+! SECTION 3: H-H
+H_3=0.381
+W_3=0.0857
+T13=X1
+T23=X2
+T33=0
+D_3=0.29
+TY3=1
+PROPSEC,H_3,W_3,T13,T23,T33,D_3,TY3
+A3=PSAREA
+I3=PSINERCIA
+! SECTION 4: H-H
+H_4=0.381
+W_4=0.0857
+T14=X1
+T24=X2
+T34=0
+D_4=0.29
+TY4=1
+PROPSEC,H_4,W_4,T14,T24,T34,D_4,TY4
+A4=PSAREA
+I4=PSINERCIA
+! SECTION 5: H-H
+H_5=0.381
+W_5=0.0857
+T15=X1
+T25=X2
+T35=0
+D_5=0.29
+TY5=1
+PROPSEC,H_5,W_5,T15,T25,T35,D_5,TY5
+A5=PSAREA
+I5=PSINERCIA
+! SECTION 6: H-H
+H_6=0.381
+W_6=0.0857
+T16=X1
+T26=X2
+T36=0
+D_6=0.29
+TY6=1
+PROPSEC,H_6,W_6,T16,T26,T36,D_6,TY6
+A6=PSAREA
+I6=PSINERCIA
+! SECTION 7: J-J
+H_7=0.127
+W_7=0.0889
+T17=X3
+T27=X4
+T37=X5
+D_7=0.255+2*tt
+TY7=3
+PROPSEC,H_7,W_7,T17,T27,T37,D_7,TY7
+A7=PSAREA
+I7=PSINERCIA
+! SECTION 8: B-B
+H_8=0.1016
+W_8=0.0762
+T18=X6
+T28=X7
+T38=X8
+D_8=0.255+2*tt
+TY8=2
+PROPSEC,H_8,W_8,T18,T28,T38,D_8,TY8
+A8=PSAREA
+I8=PSINERCIA
+! SECTION 9: G-G
+H_9=0.1524
+W_9=0.1016
+T19=X9
+T29=X10
+T39=X11
+D_9=0.255+2*tt
+TY9=2
+PROPSEC,H_9,W_9,T19,T29,T39,D_9,TY9
+A9=PSAREA
+I9=PSINERCIA
+! SECTION 10: G-G
+H_10=0.1524
+W_10=0.1016
+T110=X9
+T210=X10
+T310=X11
+D_10=0.255+2*tt
+TY10=2
+PROPSEC,H_10,W_10,T110,T210,T310,D_10,TY10 
+A10=PSAREA
+I10=PSINERCIA
+! SECTION 11: B-B
+H_11=0.1016
+W_11=0.0762
+T111=X6
+T211=X7
+T311=X8
+D_11=0.255+2*tt
+TY11=2
+PROPSEC,H_11,W_11,T111,T211,T311,D_11,TY11
+A11=PSAREA
+I11=PSINERCIA
+! SECTION 12: G-G
+H_12=0.1524
+W_12=0.1016
+T112=X9
+T212=X10
+T312=X11
+D_12=0.255+2*tt
+TY12=2
+PROPSEC,H_12,W_12,T112,T212,T312,D_12,TY12
+A12=PSAREA
+I12=PSINERCIA
+! SECTION 13: G-G
+H_13=0.1524
+W_13=0.1016
+T113=X9
+T213=X10
+T313=X11
+D_13=0.255+2*tt
+TY13=2
+PROPSEC,H_13,W_13,T113,T213,T313,D_13,TY13
+A13=PSAREA
+I13=PSINERCIA
+! SECTION 14: B-B
+H_14=0.1016
+W_14=0.0762
+T114=X6
+T214=X7
+T314=X8
+D_14=0.255+2*tt
+TY14=2
+PROPSEC,H_14,W_14,T114,T214,T314,D_14,TY14
+A14=PSAREA
+I14=PSINERCIA
+! SECTION 15: J-J
+H_15=0.127
+W_15=0.0889
+T115=X3
+T215=X4
+T315=X5
+D_15=0.255+2*tt
+TY15=3
+PROPSEC,H_15,W_15,T115,T215,T315,D_15,TY15
+A15=PSAREA
+I15=PSINERCIA
+! SECTION 16: E-E
+H_16=0.127
+W_16=0.0889
+T116=X12
+T216=X13
+T316=X14
+D_16=0.255+2*tt
+TY16=2
+PROPSEC,H_16,W_16,T116,T216,T316,D_16,TY16
+A16=PSAREA
+I16=PSINERCIA
+! SECTION 17: E-E
+H_17=0.127
+W_17=0.0889
+T117=X12
+T217=X13
+T317=X14
+D_17=0.255+2*tt
+TY17=2
+PROPSEC,H_17,W_17,T117,T217,T317,D_17,TY17
+A17=PSAREA
+I17=PSINERCIA
+!***_
+!-------------------------------------------------------------------------!
+!****_                    3. Pre-processing                      	 _****!
+!-------------------------------------------------------------------------!
+/PREP7
+! BAR 1
+ET,1,BEAM188				
+KEYOPT,1,3,3				
+SECT,1,BEAM,ASEC			
+SECD,A1,I1,,I1,,1E-6		
+MP,DENS,1,Den				
+MP,EX,1,E					
+MP,NUXY,1,Poisson			
+TB,MISO,1,,2,				
+TBPT,,Epsl_y,fy				
+TBPT,,Epsl_u,fy*1.5
+! BAR 2
+ET,2,BEAM188                
+KEYOPT,2,3,3                
+SECT,2,BEAM,ASEC			
+SECD,A2,I2,,I2,,1E-6		
+MP,DENS,2,Den				
+MP,EX,2,E					
+MP,NUXY,2,Poisson			
+TB,MISO,2,,2,				
+TBPT,,Epsl_y,fy				
+TBPT,,Epsl_u,fy*1.5
+! BAR 3
+ET,3,BEAM188                
+KEYOPT,3,3,3                
+SECT,3,BEAM,ASEC			
+SECD,A3,I3,,I3,,1E-6		
+MP,DENS,3,Den				
+MP,EX,3,E
+MP,NUXY,3,Poisson
+TB,MISO,3,,2,               
+TBPT,,Epsl_y,fy				
+TBPT,,Epsl_u,fy*1.5
+! BAR 4
+ET,4,BEAM188                
+KEYOPT,4,3,3                
+SECT,4,BEAM,ASEC			
+SECD,A4,I4,,I4,,1E-6		
+MP,DENS,4,Den				
+MP,EX,4,E
+MP,NUXY,4,Poisson
+TB,MISO,4,,2,				
+TBPT,,Epsl_y,fy				
+TBPT,,Epsl_u,fy*1.5
+! BAR 5
+ET,5,BEAM188                
+KEYOPT,5,3,3                
+SECT,5,BEAM,ASEC			
+SECD,A5,I5,,I5,,1E-6		
+MP,DENS,5,Den				
+MP,EX,5,E
+MP,NUXY,5,Poisson
+TB,MISO,5,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 6
+ET,6,BEAM188                
+KEYOPT,6,3,3                
+SECT,6,BEAM,ASEC			
+SECD,A6,I6,,I6,,1E-6		
+MP,DENS,6,Den				
+MP,EX,6,E
+MP,NUXY,6,Poisson
+TB,MISO,6,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 7
+ET,7,BEAM188                
+KEYOPT,7,3,3                
+SECT,7,BEAM,ASEC			
+SECD,A7,I7,,I7,,1E-6		
+MP,DENS,7,Den
+MP,EX,7,E
+MP,NUXY,7,Poisson
+TB,MISO,7,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 8
+ET,8,BEAM188                
+KEYOPT,8,3,3                
+SECT,8,BEAM,ASEC			
+SECD,A8,I8,,I8,,1E-6		
+MP,DENS,8,Den
+MP,EX,8,E
+MP,NUXY,8,Poisson
+TB,MISO,8,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 9
+ET,9,BEAM188                
+KEYOPT,9,3,3                
+SECT,9,BEAM,ASEC			
+SECD,A9,I9,,I9,,1E-6		
+MP,DENS,9,Den
+MP,EX,9,E
+MP,NUXY,9,Poisson
+TB,MISO,9,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 10
+ET,10,BEAM188               
+KEYOPT,10,3,3               
+SECT,10,BEAM,ASEC			
+SECD,A10,I10,,I10,,1E-6		
+MP,DENS,10,Den
+MP,EX,10,E
+MP,NUXY,10,Poisson
+TB,MISO,10,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 11
+ET,11,BEAM188               
+KEYOPT,11,3,3               
+SECT,11,BEAM,ASEC			
+SECD,A11,I11,,I11,,1E-6		
+MP,DENS,11,Den
+MP,EX,11,E
+MP,NUXY,11,Poisson
+TB,MISO,11,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 12
+ET,12,BEAM188               
+KEYOPT,12,3,3               
+SECT,12,BEAM,ASEC			
+SECD,A12,I12,,I12,,1E-6		
+MP,DENS,12,Den
+MP,EX,12,E
+MP,NUXY,12,Poisson
+TB,MISO,12,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 13
+ET,13,BEAM188               
+KEYOPT,13,3,3               
+SECT,13,BEAM,ASEC			
+SECD,A13,I13,,I13,,1E-6		
+MP,DENS,13,Den
+MP,EX,13,E
+MP,NUXY,13,Poisson
+TB,MISO,13,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 14
+ET,14,BEAM188               
+KEYOPT,14,3,3               
+SECT,14,BEAM,ASEC			
+SECD,A14,I14,,I14,,1E-6		
+MP,DENS,14,Den
+MP,EX,14,E
+MP,NUXY,14,Poisson
+TB,MISO,14,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 15
+ET,15,BEAM188               
+KEYOPT,15,3,3               
+SECT,15,BEAM,ASEC			
+SECD,A15,I15,,I15,,1E-6		
+MP,DENS,15,Den
+MP,EX,15,E
+MP,NUXY,15,Poisson
+TB,MISO,15,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 16
+ET,16,BEAM188               
+KEYOPT,16,3,3               
+SECT,16,BEAM,ASEC			
+SECD,A16,I16,,I16,,1E-6		
+MP,DENS,16,Den
+MP,EX,16,E
+MP,NUXY,16,Poisson
+TB,MISO,16,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! BAR 17
+ET,17,BEAM188               
+KEYOPT,17,3,3               
+SECT,17,BEAM,ASEC			
+SECD,A17,I17,,I17,,1E-6		
+MP,DENS,17,Den
+MP,EX,17,E
+MP,NUXY,17,Poisson
+TB,MISO,17,,2,				
+TBPT,,Epsl_y,fy			    
+TBPT,,Epsl_u,fy*1.5
+! KEYPOINT - TRUSS
+K, 1,      0,      0,  0	
+K, 2,  5.137,      0,  0	
+K, 3, 10.725,      0,  0	
+K, 4, 16.313,      0,  0	
+K, 5, 21.901,      0,  0	
+K, 6, 27.489,      0,  0	
+K, 7, 32.625,      0,  0	
+K, 8,  5.137, -5.901,  0	
+K, 9, 16.313, -5.901,  0	
+K,10, 27.489, -5.901,  0	
+! Parameters referring to mesh discretization
+divb = 20
+divhi= 10
+divhs= 10
+divd = 20
+! ELEM 1
+L,1,2
+ALLSEL,ALL
+LSEL,S,LINE,,1
+LATT,1,1,1,,,,1
+LESIZE,ALL,,,divhs
+LMESH,1
+! ELEM 2
+L,2,3
+ALLSEL,ALL
+LSEL,S,LINE,,2
+LATT,2,2,2,,,,2
+LESIZE,ALL,,,divhs
+LMESH,2
+! ELEM 3
+L,3,4
+ALLSEL,ALL
+LSEL,S,LINE,,3
+LATT,3,3,3,,,,3
+LESIZE,ALL,,,divhs
+LMESH,3
+! ELEM 4
+L,4,5
+ALLSEL,ALL
+LSEL,S,LINE,,4
+LATT,4,4,4,,,,4
+LESIZE,ALL,,,divhs
+LMESH,4
+! ELEM 5
+L,5,6
+ALLSEL,ALL
+LSEL,S,LINE,,5
+LATT,5,5,5,,,,5
+LESIZE,ALL,,,divhs
+LMESH,5
+! ELEM 6
+L,6,7
+ALLSEL,ALL
+LSEL,S,LINE,,6
+LATT,6,6,6,,,,6
+LESIZE,ALL,,,divhs
+LMESH,6
+! ELEM 7
+L,8,1
+ALLSEL,ALL
+LSEL,S,LINE,,7
+LATT,7,7,7,,,,7
+LESIZE,ALL,,,divd
+LMESH,7
+! ELEM 8
+L,8,2
+ALLSEL,ALL
+LSEL,S,LINE,,8
+LATT,8,8,8,,,,8
+LESIZE,ALL,,,divb
+LMESH,8
+! ELEM 9
+L,8,3
+ALLSEL,ALL
+LSEL,S,LINE,,9
+LATT,9,9,9,,,,9
+LESIZE,ALL,,,divd
+LMESH,9
+! ELEM 10
+L,9,3
+ALLSEL,ALL
+LSEL,S,LINE,,10
+LATT,10,10,10,,,,10
+LESIZE,ALL,,,divd
+LMESH,10
+! ELEM 11
+L,9,4
+ALLSEL,ALL
+LSEL,S,LINE,,11
+LATT,11,11,11,,,,11
+LESIZE,ALL,,,divb
+LMESH,11
+! ELEM 12
+L,9,5
+ALLSEL,ALL
+LSEL,S,LINE,,12
+LATT,12,12,12,,,,12
+LESIZE,ALL,,,divd
+LMESH,12
+! ELEM 13
+L,10,5
+ALLSEL,ALL
+LSEL,S,LINE,,13
+LATT,13,13,13,,,,13
+LESIZE,ALL,,,divd
+LMESH,13
+! ELEM 14
+L,10,6
+ALLSEL,ALL
+LSEL,S,LINE,,14
+LATT,14,14,14,,,,14
+LESIZE,ALL,,,divb
+LMESH,14
+! ELEM 15
+L,10,7
+ALLSEL,ALL
+LSEL,S,LINE,,15
+LATT,15,15,15,,,,15
+LESIZE,ALL,,,divd
+LMESH,15
+! ELEM 16
+L,8,9
+ALLSEL,ALL
+LSEL,S,LINE,,16
+LATT,16,16,16,,,,16
+LESIZE,ALL,,,divhi
+LMESH,16
+! ELEM 17
+L,9,10
+ALLSEL,ALL
+LSEL,S,LINE,,17
+LATT,17,17,17,,,,17
+LESIZE,ALL,,,divhi
+LMESH,17
+! Merge node elements
+NUMMRG,NODE,,,,LOW
+NUMCMP,NODE
+! CREATE JOINTS
+KSEL,ALL
+NSLK,S
+ENDRELEASE,,,ROTZ,,,,0,
+! APPLY CONSTRAINTS
+ALLSEL,ALL
+NSEL,ALL
+D,ALL,UZ,,,,,ROTX,ROTY		! AVOIDS DISPLACEMENTS AND ROTATIONS OUT OF THE PLANE
+! Support conditions
+DK,1,UX,0                   ! Defines degree-of-freedom constraints at nodes.
+DK,1,UY,0
+DK,1,UZ,0
+DK,7,UY,0
+DK,7,UZ,0
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                    4. Buckling Modes                     	 _****!
+!-------------------------------------------------------------------------! 
+*DO,K,2,6,1
+	! Pre-Buckling Analysis
+	/SOLU
+	ANTYPE,STATIC			! STATIC ANALYSIS
+	PSTRES,ON				! CALCULATE PRESTRESS EFFECTS
+	KSEL,ALL
+	FK,ALL,FY,0
+	FK,K,FY,-1              ! UNIT LOAD
+	SOLVE
+	FINISH
+	! Calculation of the eigenvalues ​​and eigenvectors
+	/SOLU
+	N_MF=5					! NUMBER OF BUCKLING MODES
+	ANTYPE,BUCKLE           ! BUCKLING ANALYSIS
+	BUCOPT,LANB,N_MF       	! USE BLOCK LANCZOS EIGENVALUE EXTRACTION METHOD
+	MXPAND,N_MF
+	SOLVE
+	FINISH
+	! Identification of main failure modes
+	/POST1						
+	SET,FIRST
+	*DO,ii,1,N_MF,1			
+		SET,1,ii			
+		*GET,T_MDF,ACTIVE,0,SET,TIME
+		*IF,T_MDF,LE,0,THEN
+			MDF_1=ii+1
+		*ENDIF
+	*ENDDO
+	FINISH
+	! SAVE BUCKLING ANALISYS
+	/SOLU
+	SAVE,zmodelf,db			! SAVE BUCKLING ANALISYS
+	PARSAV,SCALAR,zMFD,txt	! Save the scalar parameters
+	FINISH					
+	! Geometry Update	
+	*DO,jj,0,0,1
+		/PREP7
+		UPGEOM,0.001,1,MDF_1+jj,zteste,rst! Saves pre-processing
+		FILE_CURR_GEOM=CHRVAL(jj)
+		CDWRITE,ALL,FILE_CURR_GEOM
+		FINISH
+	*ENDDO
+*ENDDO
+PARSAV,SCALAR,zMFD,txt
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                    5. Geometry Update                		 _****!
+!-------------------------------------------------------------------------!
+/CLEAR,NOSTART				
+/FILENAME,zteste
+PARRES,NEW,zMFD,txt			
+/PREP7					    
+CDREAD,ALL,FILE_CURR_GEOM
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                    6. SOLUTION                                 _****!
+!-------------------------------------------------------------------------!
+/SOLU
+ACEL,,9.81                 
+! BCSOPTION,,INCORE,12,,,PERFORMACE ! ATIVA MELHOR USO DA MEMÓRIA
+! RESCONTROL,DEFINE,1,LAST  ! Controls file writing for multiframe restart
+							! DEFINE Specifies how often .xnnn restart files (default) or .rdnn remeshing database files (for nonlinear mesh adaptivity analysis) are written for a load step.
+NCNV,2						! 1 - Terminates the analysis if it fails to converge, or nodal displacements reaches a certain limit
+							! 2 - Terminate the analysis, but not the program execution, if the solution fails to converge.
+ANTYPE,0,NEW                ! Static analysis - ANTYPE,Antype - Antype STATIC or 0 Perform a static analysis.
+NLGEOM,ON                   ! Non-linear geometry on
+OUTRES,ALL,ALL              ! WRITE SOLUTION ON RESULTS FILE FOR EVERY SUBSTEP
+KBC,0			            
+
+! Applied forces at nodes (2,3,4,5,6,8,9,10)
+*DIM,APP_FORCE,ARRAY,10
+APP_FORCE(2)= 100.09E3 + Q
+APP_FORCE(3)= 100.40E3 + Q
+APP_FORCE(4)= 100.93E3 + Q
+APP_FORCE(5)= 100.40E3 + Q
+APP_FORCE(6)= 100.09E3 + Q
+APP_FORCE(8)= 3.01E3
+APP_FORCE(9)= 4.05E3
+APP_FORCE(10)=3.01E3
+
+! Parameters of load steps
+dt1=0.01
+dt1max=0.25
+
+! live load movement
+NTIMES=100
+CONTADOR=0
+*DO,K,2,4,1
+	*DO,COUNTER,1,NTIMES
+		! Applied forces at nodes
+		FK, 2,FY, -APP_FORCE(2)
+		FK, 3,FY, -APP_FORCE(3)
+		FK, 4,FY, -APP_FORCE(4)
+		FK, 5,FY, -APP_FORCE(5)
+		FK, 6,FY, -APP_FORCE(6)
+		FK, 8,FY, -APP_FORCE(8)
+		FK, 9,FY, -APP_FORCE(9)
+		FK,10,FY, -APP_FORCE(10)
+		! live load movement
+		FK,K  ,FY,-(APP_FORCE(K)+P*(COUNTER/NTIMES))
+		FK,K-1,FY,-(APP_FORCE(K-1)+P*(1-COUNTER/NTIMES))
+		TIME,(CONTADOR+COUNTER/NTIMES+1)
+        DELTIM,dt1,dt1,dt1max
+        ALLSEL
+		SOLVE
+	*ENDDO
+	CONTADOR=CONTADOR+1
+*ENDDO
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_			  7. Post-processing  POST26        				 _****!
+!-------------------------------------------------------------------------!
+/POST26                     
+*DO,K,2,4,1
+	KSEL,S,KP,,K            ! SELEC O KEYPOINT
+	NSLK,S                  ! SELEC NÓS ASSOCIADOS AO KEYPOINT K
+	*GET,MINNODE,NODE,0,NUM,MIN ! RETONA O NUMERO DO NÓ SELEC NO COMANDO ANTERIOR
+	NSOL,2,MINNODE,U,Y      ! Define Time-history Variable 2- DESLOCAMENTO (OBS - Variavel 1 é sempre TIME)
+    DERIV,3,2,1             ! define a primeira derivada do deslocamento
+    DERIV,4,3,1             ! define a segunda derivada do deslocamento
+	FILLDATA,5,,,,90
+    FILLDATA,6,,,,0
+    FILLDATA,7,,,,Q
+	*GET,SIZE,VARI,,NSETS   ! Calculates The size of the arrays (*DIM)
+	*DIM,TIME_Q,array,SIZE  ! Create array parameter
+    *DIM,DES_Y,array,SIZE   ! Create array parameter
+    *DIM,DUY,array,SIZE  	! Create array parameter
+    *DIM,DDUY,array,SIZE  	! Create array parameter
+    *DIM,ATAN_GRAU,array,SIZE  ! Create array parameter
+    *DIM,TEMP_VAR,array,SIZE
+    *DIM,QAPP,array,SIZE
+    *DIM,RIG,array,SIZE
+    *DIM,QINIC,array,SIZE
+	VGET,TIME_Q(1),1        ! Store time-history data of variable 5 into FOR_Y        
+	VGET,DES_Y(1) ,2        ! Store time-history data of variable 2 into DES_Y
+    VGET,DUY(1),3        	! Store time-history data of variable 5 into FOR_Y
+    VGET,DDUY(1),4        	! Store time-history data of variable 5 into FOR_Y
+    VGET,TEMP_VAR(1),5      ! Store time-history data of variable 5 into FOR_Y
+    VGET,ATAN_GRAU(1),6     ! Store time-history data of variable 5 into FOR_Y
+    VGET,QINIC(1),7         ! Store time-history data of variable 5 into FOR_Y
+    *AFUN,DEG
+    *VFUN,ATAN_GRAU(1),ATAN,DUY(1)
+    *VOPER,RIG(1),ATAN_GRAU(1),ADD,TEMP_VAR(1)
+    *VOPER,QAPP(1),QINIC(1),MULT,TIME_Q(1)
+        
+*CFOPEN,RESP_ESTR,txt,,APPEND
+*VWRITE,TIME_Q(1),DES_Y(1),DUY(1),DDUY(1),RIG(1),QINIC(1),K! Write array in given format to file "disp.dat"
+(g18.8,1x,g18.8,1x,g18.8,1x,g18.8,1x,g18.8,1x,g18.8,1x,g18.8)
+*CFCLOSE
+    *VSCFUN,MIN_RIG_ANG,MIN,RIG(1)
+*CFOPEN,ANG_RIG_MIN,txt,,APPEND
+*VWRITE,MIN_RIG_ANG,K
+(g18.8,1x,g18.8)
+*CFCLOSE
+    INIC_RIG=RIG(1,1)
+*CFOPEN,RIG_INIC,txt,,APPEND
+*VWRITE,INIC_RIG,K
+(g18.8,1x,g18.8)
+*CFCLOSE
+    RIG_REL_MIN=MIN_RIG_ANG/INIC_RIG
+*CFOPEN,RIG_MIN,txt,,APPEND
+*VWRITE,RIG_REL_MIN,K
+(g18.8,1x,g18.8)
+*CFCLOSE
+    *VSCFUN,MAX_DESL,MIN,DES_Y(1)
+*CFOPEN,DESL_MAX,txt,,APPEND
+*VWRITE,MAX_DESL,K
+(g18.8,1x,g18.8)
+*CFCLOSE
+	*ENDDO    
+FINISH

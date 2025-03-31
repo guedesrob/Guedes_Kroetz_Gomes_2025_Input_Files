@@ -1,0 +1,64 @@
+! PROP_SEC.MAC
+! CALCULATES AREA AND MOMENT OF INERTIA OF SECTION PROPERTIES
+!       ARG1: H  - HIGHT
+!       ARG2: W  - WIDTH
+!       ARG3: T1 - FLANGE THICKNESS
+!       ARG4: T2 - WEB THICKNESS
+!       ARG5: T3 - PLATE THICKNESS
+!       ARG6: D  - DISTANCE BETEWEEN INTERNAL FACES
+!       ARG7: SECTION TYPE
+!                   1 - U SHAPE EX: (H-H)
+!                   2 - L SHAPES EX: (G-G)
+!                   3 - I SHAPE PROFILES (L + STEEL PLATES) EX: (J-J)
+H  = ARG1
+W  = ARG2
+T1 = ARG3
+T2 = ARG4
+T3 = ARG5
+D  = ARG6
+*IF,ARG7,EQ,1,THEN ! 2xC
+    PSAREA  = 2*H*T2+4*(W-T2)*T1
+    TERM_1 = 2*(W-T2)*T1*((H/2-T1/2)**2)
+    TERM_2 = 2*(W-T2)*T1*((-H/2+T1/2)**2)
+    TERM_3 = T2*(H**3)/6+(W-T2)*(T1**3)/3
+    IX = TERM_1 + TERM_2 + TERM_3
+    TERM_4 = 2*H*T2*((D/2+T2/2)**2)
+    TERM_5 = 4*(W-T2)*T1*((D/2+T2/2+W/2)**2)
+    TERM_6 = H*(T2**3)/6+T1*((W-T2)**3)/3
+    IY = TERM_4 + TERM_5 + TERM_6
+    *IF,IX,LE,IY,THEN
+        PSINERCIA = IX
+    *ELSE
+        PSINERCIA = IY
+    *ENDIF
+*ELSEIF,ARG7,EQ,2,THEN ! 4XL
+    PSAREA = 4*H*T2+4*(W-T2)*T1
+    TERM_1 = 4*H*T2*((H/2+T3/2)**2)
+    TERM_2 = 4*(W-T2)*T1*((T3/2+T1/2)**2)
+    TERM_3 = T2*(H**3)/3+(W-T2)*(T1**3)/3
+    IX = TERM_1 + TERM_2 + TERM_3
+    TERM_4 = 4*H*T2*((D/2-T2/2)**2)
+    TERM_5 = 4*(W-T2)*T1*((D/2-T2/2-W/2)**2)
+    TERM_6 = H*(T2**3)/3+T1*((W-T2)**3)/3
+    IY = TERM_4 + TERM_5 + TERM_6
+    *IF,IX,LE,IY,THEN
+        PSINERCIA = IX
+    *ELSE
+        PSINERCIA = IY
+    *ENDIF
+*ELSEIF,ARG7,EQ,3,THEN !I=4XL+CHP
+    PSAREA = 4*H*T2+4*(W-T2)*T1+D*T3
+    TERM_1 = 4*H*T2*((H/2+T3/2)**2)
+    TERM_2 = 4*(W-T2)*T1*((T3/2+T1/2)**2)
+    TERM_3 = T2*(H**3)/3+(W-T2)*(T1**3)/3+D*(T3**3)/12
+    IX = TERM_1 + TERM_2 + TERM_3
+    TERM_4 = 4*H*T2*((D/2-T2/2)**2)
+    TERM_5 = 4*(W-T2)*T1*((D/2-T2/2-W/2)**2)
+    TERM_6 = H*(T2**3)/3+T1*((W-T2)**3)/3+T3*(D**3)/12
+    IY = TERM_4 + TERM_5 + TERM_6
+    *IF,IX,LE,IY,THEN
+        PSINERCIA = IX
+    *ELSE
+        PSINERCIA = IY
+    *ENDIF
+*ENDIF
