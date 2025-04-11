@@ -1,4 +1,4 @@
-# Structural-Safety-of-Historical-Truss-Bridges-Input-Files
+# 2025_Guedes_Kroetz_Gomes_Input_Files
 This repository contains supplementary materials and detailed information related to the finite element model analysis, conducted in AKMCS reliability study for the Hercilio Luz Bridge Access Span.
 
 Content of each folder:
