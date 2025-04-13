@@ -9,7 +9,7 @@ Content of each folder:
 
 03 - LSF.m (Limit state function definition to be called by UQLab)
 
-04 - results_AKMCS.mat (AKMCS analysis results. If results_AKMCS.mat.001 and results_AKMCS.mat002 is avaiable joint files using Winrar)
+04 - results_AKMCS.mat (AKMCS analysis results. If the files "results_AKMCS.mat.001" and "results_AKMCS.mat002" are avaiable, joint them using Winrar)
 
 05 - PROPSEC.MAC (A macro that gives section properties for the APDL input file)
 
