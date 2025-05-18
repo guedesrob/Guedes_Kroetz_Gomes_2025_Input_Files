@@ -1,0 +1,353 @@
+/BATCH                          ! Must always be the 1st line of the code
+!-------------------------------------------------------------------------!
+!****_                    1. ANSYS INITIALIZATION                    _****!
+!-------------------------------------------------------------------------!
+FINISH
+/CLEAR,NOSTART
+/FILENAME,zteste
+/CWD,'C:\Ansyswd'		! Change Working Directory
+!***_
+!-------------------------------------------------------------------------!
+!****_                    2. INPUT PARAMETERS                        _****!
+!-------------------------------------------------------------------------!  
+! 2.1 RANDOM VARIABLES (NOMINAL VALUES)
+x1=205E9	                ! [GPa] - E
+x2=100E6                	! [MPa] - fy
+x3=78.5E-4            		! [cm²] - Area (Tubular Section)
+x4=0.05		               	! [m]   - R
+x5=2		                ! [m]   - X0
+x6=0.1  		        	! [m]   - Y0
+
+x7=205E9	                ! [GPa] - E
+x8=100E6                	! [MPa] - fy
+x9=78.5E-4	            	! [cm²] - Area (Tubular Section)
+x10=0.05		        ! [m]   - R
+x11=2		                ! [m]   - X0
+x12=0.1  		        ! [m]   - Y0
+! 2.2 PARAMETERS DEPENDENT ON RANDOM VARIABLES
+E1  = X1			! [GPa] - E
+fy1 = X2			! [MPa] - fy
+A0  = X3			! [cm²] - A
+raio= X4			! [m]   - Radius (Tubular Section)
+X0  = X5			! [m]   - X0
+Y0  = X6			! [m]   - XY
+! 2.3 OTHER PROBLEM VARIABLES
+FORCA=61.2E3
+NUM_BAR = 2                    	! [Adm] - Number of bars				
+delta = 0.0105			! [m] 	- Prescribed displacement
+LambP = 10			! [Adm] - Final load factor
+Poisson	= 0.3			! [Adm] - Poisson Coefficient
+Pi = acos(-1)			! [Adm] - Pi Constant
+R1 = (A0/Pi)**0.5           	! [m]   - Radius
+I1 = Pi*(R1**4)/4		! [m^4] - Moment of Inertia
+Rad_gir = (I1/(Pi*R1**2))**0.5
+Ind_Esbelt = ((X0**2+Y0**2)**0.5)/Rad_gir
+P_Euler = (Pi**3)*E1*(R1**4)/(4*(X0**2+Y0**2))
+F_an = 2*E1*A0*(1-(cos(atan(Y0/X0)))/(cos(atan((Y0-delta)/X0))))*sin(atan((Y0-delta)/X0))
+Epsl_y1	= fy1/E1		! [adm] - Elastic deformation portion
+Epsl_u	= 0.15
+! 2.4 MESH DISCRETIZATION PARAMETERS
+divb = 10			! [adm] - n width divisions
+divh = 10			! [adm] - n height divisions
+divd = 10			! [adm] - n diagonal divisions
+!-------------------------------------------------------------------------!
+!****_                    3. PRE-PROCESSING                          _****!
+!-------------------------------------------------------------------------!
+/PREP7
+! BAR 1
+ET,1,BEAM188			! BEAM ELEMENT
+KEYOPT,1,3,3			! ACTIVATES CUBIC SHAPE FUNCTION for two internal nodes in the element
+SECTYPE,1,BEAM,CSOLID		! CROSS-SECTION TYPE
+SECDATA,raio			! RECTANGULAR SECTION DIMENSIONS
+MP,EX,1,E1			! DEFINES ELASTICITY MODULE
+MP,NUXY,1,Poisson		! DEFINES POISSON RATIO
+TB,MISO,1,,2,			! SPECIFY MULTILINEAR ISOTROPIC HARDENING
+TBPT,,Epsl_y1,fy1		! ENTER STRAIN VS STRESS DATA POINTS
+TBPT,,Epsl_u,fy1
+! BAR 2
+ET,2,BEAM188                	! BEAM ELEMENT
+KEYOPT,2,3,3                	! ACTIVATES CUBIC SHAPE FUNCTION for two internal nodes in the element
+SECTYPE,2,BEAM,CSOLID       	! CROSS-SECTION TYPE
+SECDATA,raio      		! DEFINES SECTION GEOMETRY
+MP,EX,2,E1			! DEFINES YOUNG'S MODULE
+MP,NUXY,2,Poisson		! DEFINES POISSON RATIO
+TB,MISO,2,,2,			! SPECIFY MULTILINEAR ISOTROPIC HARDENING
+TBPT,,Epsl_y1,fy1		! ENTER STRAIN VS STRESS DATA POINTS
+TBPT,,Epsl_u,fy1
+! KEYPOINT
+K, 1,    0,   0,  0		! Node #1
+K, 2,   X0,  Y0,  0		! Node #2
+K, 3, 2*X0,   0,  0		! Node #3
+! ELEM 1
+L,1,2
+ALLSEL,ALL
+LSEL,S,LINE,,1
+LATT,1,1,1,,,,1
+LESIZE,ALL,,,divd
+LMESH,1
+! ELEM 2
+L,2,3
+ALLSEL,ALL
+LSEL,S,LINE,,2
+LATT,2,2,2,,,,2
+LESIZE,ALL,,,divd
+LMESH,2
+! CREATE JOINTS
+KSEL,S,KP,,2
+NSLK,S
+ENDRELEASE,,1,ROTZ,,,,,0
+! CPLIST
+! APPLY CONSTRAINTS
+ALLSEL,ALL
+NSEL,ALL
+D,ALL,UZ,,,,,ROTX,ROTY     	! AVOIDS DISPLACEMENTS AND ROTATIONS OUT OF THE PLANE
+! SUPPORT CONDITIONS
+DK,1,UX,0                  	! Defines degree-of-freedom constraints at nodes.
+DK,1,UY,0
+DK,1,UZ,0
+DK,3,UX,0
+DK,3,UY,0
+DK,3,UZ,0                  	! Lists boundary conditions at joint nodes
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                       4. BUCKLING MODE                        _****!
+!-------------------------------------------------------------------------! 
+! PRE-BUCKLING ANALYSIS
+/SOLU
+ANTYPE,STATIC			! STATIC ANALYSIS
+PSTRES,ON			! CALCULATE PRESTRESS EFFECTS
+FK,2,FY,-1              	! UNIT LOAD
+SOLVE
+FINISH
+! CALCULATION OF EIGENVALUES AND EIGENVECTORS
+/SOLU
+ANTYPE,BUCKLE               	! BUCKLING ANALYSIS
+BUCOPT,LANB,NUM_BAR		! USE BLOCK LANCZOS EIGENVALUE EXTRACTION METHOD
+MXPAND,NUM_BAR
+SOLVE
+! CALCULATION OF CRITICAL LOADS
+*DO,BAR,1,NUM_BAR,1		! START LOOP FOR EACH BUCKLING MODE
+	*GET,FT,MODE,BAR,FREQ	! STORES IN FT THE TIME FACTOR ASSOCIATED WITH BAR "N"
+	FT = (FT**2)**0.5	! CONVERTS TIME FACTOR TO ITS ABSOLUTE VALUE
+	*IF,BAR,EQ,1,THEN	! IF N=1, FCR=FT
+		FCR=FT
+		MFD=BAR
+	*ELSEIF,FT,LT,FCR,THEN
+		FCR=FT
+		MFD=BAR
+	*ENDIF
+*ENDDO
+SAVE,zmodelf,db
+FINISH				! END OF BUCKLING ANALYSIS
+! GEOMETRY UPDATE
+/PREP7
+*DO,INDEX,1,NUM_BAR,1
+	*IF,INDEX,EQ,1,THEN
+		UPGEOM,0.001,1,INDEX,zteste,rst
+		FILE_CURR_GEOM=CHRVAL(INDEX)			
+		CDWRITE,ALL,FILE_CURR_GEOM	
+	*ELSE
+		UPGEOM,0.001,1,INDEX,zteste,rst! SAVES PRE-PROCESSING
+		FILE_CURR_GEOM=CHRVAL(INDEX)
+		CDWRITE,ALL,FILE_CURR_GEOM
+	*ENDIF
+*ENDDO
+PARSAV,SCALAR,zMFD,txt
+FINISH		
+!***_
+!-------------------------------------------------------------------------!
+!****_                       5. GEOMETRY UPDATE                      _****!
+!-------------------------------------------------------------------------!
+/CLEAR,NOSTART			! CLEARS MEMORY
+/FILENAME,zteste
+PARRES,NEW,zMFD,txt		! READS SCALAR PARAMETERS
+/PREP7				! GEOMETRY UPDATE WITH PERTURBATION
+CDREAD,ALL,FILE_CURR_GEOM
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                       6. SOLUTION                             _****!
+!-------------------------------------------------------------------------!
+/SOLU
+ANTYPE,STATIC
+BCSOPTION,,INCORE,10,,,PERFORMACE ! ENABLES BETTER MEMORY USAGE
+RESCONTROL,DEFINE,1,LAST	! Controls file writing for multiframe restart
+				! DEFINE Specifies how often .xnnn restart files (default) or .rdnn remeshing database files (for nonlinear mesh adaptivity analysis) are written for a load step.
+NCNV,2					! 1 - Terminates the analysis if it fails to converge 
+					! 2 - Terminate the analysis, but not the program execution, if the solution fails to converge.
+ANTYPE,0,NEW                	! Static analysis - ANTYPE,Antype - Antype STATIC or 0 Perform a static analysis.
+NLGEOM,ON                   	! Non-linear geometry on -
+! NROPT,FULL
+! CNVTOL,F,,.001
+OUTRES,ALL,ALL              	! WRITE SOLUTION ON RESULTS FILE FOR EVERY SUBSTEP
+KBC,0					! 0 - load linearly interpolated between substeps. 1 - applied in first substep
+! PARAMETERS RELATED TO FIRST LOAD STEP
+t1 = LambP			! [s] time at end of step
+dt1 = 0.001			! [s] time substep
+dt1max = 0.01			! [s] maximum time substep
+! 1ST LOAD STEP
+TIME,t1				! Defining time at end of step and time increment		
+DELTIM,dt1,dt1,dt1max
+FK,2,FY, -FORCA*LambP
+ALLSEL,ALL			! Solving the system        
+SOLVE
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                       7. POST-PROCESSING                      _****!
+!-------------------------------------------------------------------------!
+! ENTERS THE DATABASE RESULTS POSTPROCESSOR.
+/POST1				! /POST1 - Enters the database results postprocessor.
+
+*GET,TT,ACTIVE,0,SET,TIME	! STORES IN "SIZE" THE QUANTITY OF SELECTED ELEMENTS (0->CURRENT SELECTION)
+
+Flimp=FORCA*TT
+
+*CFOPEN,RESULTADOS,txt
+*VWRITE,Flimp			! Write array in given format to file "disp.dat"
+(F18.10)
+*CFCLOSE			
+FINISH
+
+!-------------------------------------------------------------------------!
+!****_                       8. GEOMETRY REINITIALIZATION            _****!
+!-------------------------------------------------------------------------!
+/CLEAR,NOSTART				! CLEARS MEMORY
+/FILENAME,zteste
+PARRES,NEW,zMFD,txt			! READS SCALAR PARAMETERS
+! 8.1 PARAMETERS DEPENDENT ON RANDOM VARIABLES
+E1  = X7				! [GPa] - E
+fy1 = X8				! [MPa] - fy
+A0  = X9				! [cm²] - A
+raio= X10				! [m]   - Radius (Tubular Section)
+X0  = X11				! [m]   - X0
+Y0  = X12				! [m]   - XY
+! 8.2 OTHER PROBLEM VARIABLES
+FORCA=61.2E3
+NUM_BAR = 2                    		! [Adm] - Number of bars				
+delta = 0.0105				! [m] 	- Prescribed displacement
+LambP = 10				! [Adm] - Final load factor
+Poisson	= 0.3				! [Adm] - Poisson Coefficient
+Pi = acos(-1)				! [Adm] - Pi Constant
+R1 = (A0/Pi)**0.5           		! [m]   - Radius
+I1 = Pi*(R1**4)/4			! [m^4] - Moment of Inertia
+Rad_gir = (I1/(Pi*R1**2))**0.5
+Ind_Esbelt = ((X0**2+Y0**2)**0.5)/Rad_gir
+P_Euler = (Pi**3)*E1*(R1**4)/(4*(X0**2+Y0**2))
+F_an = 2*E1*A0*(1-(cos(atan(Y0/X0)))/(cos(atan((Y0-delta)/X0))))*sin(atan((Y0-delta)/X0))
+Epsl_y1	= fy1/E1			! [adm] - Elastic deformation portion
+Epsl_u	= 0.15
+! 8.3 MESH DISCRETIZATION PARAMETERS
+divb = 10				! [adm] - n width divisions
+divh = 10				! [adm] - n height divisions
+divd = 10				! [adm] - n diagonal divisions
+! PREPROCESSING
+/PREP7					! GEOMETRY UPDATE WITH PERTURBATION
+! BAR 1
+ET,1,BEAM188				! BEAM ELEMENT
+KEYOPT,1,3,3				! ACTIVATES CUBIC SHAPE FUNCTION for two internal nodes in the element
+SECTYPE,1,BEAM,CSOLID			! CROSS-SECTION TYPE
+SECDATA,R1			        ! RECTANGULAR SECTION DIMENSIONS
+MP,EX,1,E1				! DEFINES ELASTICITY MODULE
+MP,NUXY,1,Poisson			! DEFINES POISSON RATIO
+TB,MISO,1,,2,				! SPECIFY MULTILINEAR ISOTROPIC HARDENING
+TBPT,,Epsl_y1,fy1			! ENTER STRAIN VS STRESS DATA POINTS
+TBPT,,Epsl_u,fy1
+! BAR 2
+ET,2,BEAM188                		! BEAM ELEMENT
+KEYOPT,2,3,3                		! ACTIVATES CUBIC SHAPE FUNCTION for two internal nodes in the element
+SECTYPE,2,BEAM,CSOLID       		! CROSS-SECTION TYPE
+SECDATA,R1      			! DEFINES SECTION GEOMETRY
+MP,EX,2,E1				! DEFINES YOUNG'S MODULE
+MP,NUXY,2,Poisson			! DEFINES POISSON RATIO
+TB,MISO,2,,2,				! SPECIFY MULTILINEAR ISOTROPIC HARDENING
+TBPT,,Epsl_y1,fy1			! ENTER STRAIN VS STRESS DATA POINTS
+TBPT,,Epsl_u,fy1
+! KEYPOINT
+K, 1,    0,   0,  0			! Node #1
+K, 2,   X0,  Y0,  0			! Node #2
+K, 3, 2*X0,   0,  0			! Node #3
+! ELEM 1
+L,1,2
+ALLSEL,ALL
+LSEL,S,LINE,,1
+LATT,1,1,1,,,,1
+LESIZE,ALL,,,divd
+LMESH,1
+! ELEM 2
+L,2,3
+ALLSEL,ALL
+LSEL,S,LINE,,2
+LATT,2,2,2,,,,2
+LESIZE,ALL,,,divd
+LMESH,2
+! CREATE JOINTS
+KSEL,S,KP,,2
+NSLK,S
+ENDRELEASE,,1,ROTZ,,,,,0
+! CPLIST
+! APPLY CONSTRAINTS
+ALLSEL,ALL
+NSEL,ALL
+D,ALL,UZ,,,,,ROTX,ROTY     		! AVOIDS DISPLACEMENTS AND ROTATIONS OUT OF THE PLANE
+! SUPPORT CONDITIONS
+DK,1,UX,0                  		! Defines degree-of-freedom constraints at nodes.
+DK,1,UY,0
+DK,1,UZ,0
+DK,3,UX,0
+DK,3,UY,0
+DK,3,UZ,0  
+
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                       9. INVERSE SOLVING                      _****!
+!-------------------------------------------------------------------------! 
+/SOLU	
+ANTYPE,STATIC
+NLGEOM,ON                   		! Non-linear geometry on - 
+OUTRES,ALL,ALL
+t2 = 2					! [s] time at end of step
+dt2 = 0.01				! [s] time substep
+dt2max = 0.1				! [s] maximum time substep
+TIME,t2					! Defining time at end of step and time increment		
+DELTIM,dt2,dt2,dt2max
+D,2,UY,-delta
+SOLVE					! Solves the model
+FINISH
+!***_
+!-------------------------------------------------------------------------!
+!****_                      10. POST PROCESSING                      _****!
+!-------------------------------------------------------------------------! 
+/POST26                     		! /POST26 - Enters the database results postprocessor.
+! 4.1 Storage Results & Output
+NSOL,2,2,U,Y				! Define Time-history Variable 2- DISPLACEMENT (NOTE - Variable 1 is always TIME)
+RFORCE,3,1,F,Y				! Define Time-history Variable 3- REACTION NODE 1
+RFORCE,4,12,F,Y				! Define Time-history Variable 4- REACTION NODE 3
+ADD,5,3,4,,FORCA2,,,-1,-1		! Defines a Variable that is the sum of support reactions, equal to applied force
+STORE,MERGE				! Store Variables
+
+*GET,size,VARI,,NSETS			! Calculates The size of the arrays (*DIM)
+*DIM,DES_Y,array,size			! Create array parameter
+*DIM,FOR_Y,array,size			! Create array parameter
+VGET,DES_Y(1),2				! Store time-history data of variable 2 into DES_Y
+VGET,FOR_Y(1),5				! Store time-history data of variable 5 into FOR_Y
+
+*CFOPEN,RESP_ESTR,txt
+*VWRITE,FOR_Y(1),DES_Y(1)		! Write array in given format to file "disp.dat"
+(6x,g18.8,6x,g18.8)
+*CFCLOSE
+FINISH
+
+/POST1
+NSEL,S,LOC,X,X0				! SELECT NODES AT Y = b
+*GET,NA,NODE,0,NUM,MIN			! STORE NODE # OF PT 2
+
+*CFOPEN,FNUM,txt
+*VWRITE,-FOR_Y(size,1)			! Write array in given format to file "disp.dat"
+(G18.8)
+*CFCLOSE
+
+FINISH
+!***_
